@@ -8,105 +8,86 @@
 #endif
 
 namespace ctb {
-
-    int GetAvailablePorts( std::vector<std::string>& result,
-					   bool checkInUse )
-    {
+	int GetAvailablePorts(std::vector<std::string>& result,
+		bool checkInUse)
+	{
 #ifdef _WIN32
 
-	   std::stringstream devname;
-	   ctb::SerialPort com;
+		std::stringstream devname;
+		ctb::SerialPort com;
 
-	   for( int i = 1; i < 64; i++ ) {
+		for (int i = 1; i < 64; i++) {
+			devname.clear();
+			devname.str("");
 
-		  devname.clear();
-		  devname.str( "" );
+			// some systems like WinCE doesn't like the extended port numbering...
+			i < 10 ? devname << "COM" << i : devname << "\\\\.\\COM" << i;
 
-		  // some systems like WinCE doesn't like the extended port numbering...
-		  i < 10 ? devname << "COM" << i : devname << "\\\\.\\COM" << i;
+			/*
+			COMMCONFIG cc;
 
-		  /*
-		  COMMCONFIG cc;
+			DWORD dwSize = sizeof( cc );
 
-		  DWORD dwSize = sizeof( cc );
+			if ( ::GetDefaultCommConfig( devname.str().c_str(), &cc, &dwSize ) ) {
+			   if( cc.dwProviderSubType == PST_RS232 ) {
+			*/
 
-		  if ( ::GetDefaultCommConfig( devname.str().c_str(), &cc, &dwSize ) ) {
-
-			 if( cc.dwProviderSubType == PST_RS232 ) {
-		  */
-
-			if( com.Open( devname.str().c_str() ) >= 0 ) {
+			if (com.Open(devname.str().c_str()) >= 0) {
 				devname.str("");
 				devname << "COM" << i;
-				result.push_back( devname.str().c_str() );
+				result.push_back(devname.str().c_str());
 			}
 			com.Close();
 
-		  /*
-			 }
-		  }
-		  */
-	   }
+			/*
+			   }
+			}
+			*/
+		}
 
 #else
-	   glob_t globbuf;
+		glob_t globbuf;
 
-	   // search for standard serial ports
-	   int res = glob( "/dev/ttyS*", GLOB_ERR, NULL, &globbuf );
+		// search for standard serial ports
+		int res = glob("/dev/ttyS*", GLOB_ERR, NULL, &globbuf);
 
-	   if( res == 0 ) {
+		if (res == 0) {
+			// no error, glob was successful
+			for (int i = 0; i < globbuf.gl_pathc; i++) {
+				if (checkInUse) {
+					ctb::SerialPort com;
 
-		  // no error, glob was successful
-		  for( int i = 0; i < globbuf.gl_pathc; i++ ) {
+					if (com.Open(globbuf.gl_pathv[i]) < 0) {
+						continue;
+					}
 
-			 if( checkInUse ) {
-
-				ctb::SerialPort com;
-
-				if( com.Open( globbuf.gl_pathv[ i ] ) < 0 ) {
-
-				    continue;
-
+					result.push_back(std::string(globbuf.gl_pathv[i]));
 				}
+			}
+		}
+		globfree(&globbuf);
 
-				result.push_back( std::string( globbuf.gl_pathv[ i ] ) );
+		// search for USB to RS232 converters
+		res = glob("/dev/ttyUSB*", GLOB_ERR, NULL, &globbuf);
 
-			 }
-		  }
+		if (res == 0) {
+			// no error, glob was successful
+			for (int i = 0; i < globbuf.gl_pathc; i++) {
+				if (checkInUse) {
+					ctb::SerialPort com;
 
-	   }
-	   globfree( &globbuf );
+					if (com.Open(globbuf.gl_pathv[i]) < 0) {
+						continue;
+					}
 
-	   // search for USB to RS232 converters
-	   res = glob( "/dev/ttyUSB*", GLOB_ERR, NULL, &globbuf );
-
-	   if( res == 0 ) {
-
-		  // no error, glob was successful
-		  for( int i = 0; i < globbuf.gl_pathc; i++ ) {
-
-			 if( checkInUse ) {
-
-				ctb::SerialPort com;
-
-				if( com.Open( globbuf.gl_pathv[ i ] ) < 0 ) {
-
-				    continue;
-
+					result.push_back(std::string(globbuf.gl_pathv[i]));
 				}
+			}
+		}
 
-				result.push_back( std::string( globbuf.gl_pathv[ i ] ) );
-
-			 }
-		  }
-
-	   }
-
-	   globfree( &globbuf );
+		globfree(&globbuf);
 #endif
 
-    return result.size();
-
-    }
-
+		return result.size();
+	}
 } // namespace ctb

@@ -64,7 +64,7 @@ typedef HANDLE pthread_mutex_t;
 
 #define atoll _atoi64
 
-typedef DWORD (WINAPI *PFNGetProcessId)(HANDLE hProcess);
+typedef DWORD(WINAPI *PFNGetProcessId)(HANDLE hProcess);
 
 #else
 
@@ -97,27 +97,26 @@ typedef unsigned char OCTET;
 #define msleep(ms) (usleep(ms<<10))
 #endif
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int InitSocket();
-void UninitSocket();
-char *GetTimeString();
-int ThreadCreate(pthread_t *pth, void* (*start_routine)(void*), void* arg);
-int ThreadKill(pthread_t pth);
-int ThreadWait(pthread_t pth, int timeout, void** ret);
-void MutexCreate(pthread_mutex_t* mutex);
-void MutexDestroy(pthread_mutex_t* mutex);
-void MutexLock(pthread_mutex_t* mutex);
-void MutexUnlock(pthread_mutex_t* mutex);
-int ReadDir(const char* pchDir, char* pchFileNameBuf);
-int IsFileExist(const char* filename);
-int IsDir(const char* pchName);
+	int InitSocket();
+	void UninitSocket();
+	char *GetTimeString();
+	int ThreadCreate(pthread_t *pth, void* (*start_routine)(void*), void* arg);
+	int ThreadKill(pthread_t pth);
+	int ThreadWait(pthread_t pth, int timeout, void** ret);
+	void MutexCreate(pthread_mutex_t* mutex);
+	void MutexDestroy(pthread_mutex_t* mutex);
+	void MutexLock(pthread_mutex_t* mutex);
+	void MutexUnlock(pthread_mutex_t* mutex);
+	int ReadDir(const char* pchDir, char* pchFileNameBuf);
+	int IsFileExist(const char* filename);
+	int IsDir(const char* pchName);
 
 #ifndef WIN32
-unsigned int GetTickCount();
+	unsigned int GetTickCount();
 #endif
 #ifdef __cplusplus
 }

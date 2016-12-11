@@ -26,21 +26,21 @@ int uhStats(UrlHandlerParam* param)
 {
 	char *p;
 	char buf[384];
-	HttpStats *stats=&((HttpParam*)param->hp)->stats;
-	HttpRequest *req=&param->hs->request;
+	HttpStats *stats = &((HttpParam*)param->hp)->stats;
+	HttpRequest *req = &param->hs->request;
 	IPADDR ip = param->hs->ipAddr;
 	HTTP_XML_NODE node;
 	int bufsize = param->dataBytes;
-	int ret=FLAG_DATA_RAW;
+	int ret = FLAG_DATA_RAW;
 
 	mwGetHttpDateTime(time(NULL), buf, sizeof(buf));
 
-	if (stats->clientCount>4) {
-		param->pucBuffer=(char*)malloc(stats->clientCount*256+1024);
-		ret=FLAG_DATA_RAW | FLAG_TO_FREE;
+	if (stats->clientCount > 4) {
+		param->pucBuffer = (char*)malloc(stats->clientCount * 256 + 1024);
+		ret = FLAG_DATA_RAW | FLAG_TO_FREE;
 	}
 
-	p=param->pucBuffer;
+	p = param->pucBuffer;
 
 	//generate XML
 	mwWriteXmlHeader(&p, &bufsize, 10, 0, 0);
@@ -57,7 +57,7 @@ int uhStats(UrlHandlerParam* param)
 
 	node.fmt = "%d";
 	node.name = "UpTime";
-	node.value = (void*)(time(NULL)-stats->startTime);
+	node.value = (void*)(time(NULL) - stats->startTime);
 	mwWriteXmlLine(&p, &bufsize, &node, 0);
 
 	node.fmt = "%d";
@@ -94,14 +94,14 @@ int uhStats(UrlHandlerParam* param)
 
 	{
 		HttpSocket *phsSocketCur;
-		time_t curtime=time(NULL);
+		time_t curtime = time(NULL);
 		int i;
 		for (i = 0; i < ((HttpParam*)param->hp)->maxClients; i++) {
 			phsSocketCur = ((HttpParam*)param->hp)->hsSocketQueue + i;
 			if (!phsSocketCur->socket) continue;
-			ip=phsSocketCur->ipAddr;
-			sprintf(buf,"<Client ip=\"%d.%d.%d.%d\" requests=\"%d\" expire=\"%d\" speed=\"%u\" path=\"%s\"/>",
-				ip.caddr[3],ip.caddr[2],ip.caddr[1],ip.caddr[0], phsSocketCur->iRequestCount, (int)(phsSocketCur->tmExpirationTime - curtime),
+			ip = phsSocketCur->ipAddr;
+			sprintf(buf, "<Client ip=\"%d.%d.%d.%d\" requests=\"%d\" expire=\"%d\" speed=\"%u\" path=\"%s\"/>",
+				ip.caddr[3], ip.caddr[2], ip.caddr[1], ip.caddr[0], phsSocketCur->iRequestCount, (int)(phsSocketCur->tmExpirationTime - curtime),
 				(unsigned int)(phsSocketCur->response.sentBytes / (((curtime - phsSocketCur->tmAcceptTime) << 10) + 1)), phsSocketCur->request.pucPath);
 			mwWriteXmlString(&p, &bufsize, 2, buf);
 			/*
@@ -117,8 +117,8 @@ int uhStats(UrlHandlerParam* param)
 	mwWriteXmlString(&p, &bufsize, 0, "</ServerStats>");
 
 	//return data to server
-	param->dataBytes=(int)p-(int)(param->pucBuffer);
-	param->fileType=HTTPFILETYPE_XML;
+	param->dataBytes = (int)p - (int)(param->pucBuffer);
+	param->fileType = HTTPFILETYPE_XML;
 	return ret;
 }
 
@@ -126,8 +126,8 @@ int uhStats(UrlHandlerParam* param)
 
 int uh7Zip(UrlHandlerParam* param)
 {
-	HttpRequest *req=&param->hs->request;
-	HttpParam *hp= (HttpParam*)param->hp;
+	HttpRequest *req = &param->hs->request;
+	HttpParam *hp = (HttpParam*)param->hp;
 	char *path;
 	char *filename;
 	void *content;
@@ -192,25 +192,29 @@ int uhAsyncDataTest(UrlHandlerParam* param)
 			hdata = param->hs->ptr = calloc(1, sizeof(HANDLER_DATA));
 			ThreadCreate(&hdata->thread, WriteContent, hdata);
 			param->dataBytes = 0;
-		} else {
+		}
+		else {
 			if (hdata->state == 1) {
 				// done
 				ret = 0;
-			} else if (ThreadWait(hdata->thread, 10, 0)) {
+			}
+			else if (ThreadWait(hdata->thread, 10, 0)) {
 				// data not ready
 				param->dataBytes = 0;
-			} else {
+			}
+			else {
 				// data ready
 				strcpy(param->pucBuffer, hdata->result);
 				param->dataBytes = strlen(param->pucBuffer);
 				hdata->state = 1;
 			}
 		}
-	} else {
+	}
+	else {
 		// cleanup
 		ret = 0;
 	}
-	param->fileType=HTTPFILETYPE_TEXT;
+	param->fileType = HTTPFILETYPE_TEXT;
 	return ret;
 }
 #endif

@@ -6,7 +6,7 @@
 	Distributed under the terms of the GNU General Public License v2.
 
 	This software is provided 'as is' with no explicit or implied warranties
-	in respect of its properties, including, but not limited to, correctness 
+	in respect of its properties, including, but not limited to, correctness
 	and/or fitness for purpose.
 	---------------------------------------------------------------------------
 */
@@ -92,7 +92,7 @@ void crc32Update(unsigned long *pCrc32, unsigned char *pData, unsigned long uSiz
 {
 	unsigned long i = 0;
 
-	for(i = 0; i < uSize; i++)
+	for (i = 0; i < uSize; i++)
 		*pCrc32 = ((*pCrc32) >> 8) ^ crc32tab[(pData[i]) ^ ((*pCrc32) & 0x000000FF)];
 }
 

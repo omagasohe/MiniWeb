@@ -111,7 +111,7 @@ extern FILE *fpLog;
 // local helper function prototypes
 /////////////////////////////////////////////////////////////////////////////
 SOCKET _mwAcceptSocket(HttpParam* hp, struct sockaddr_in *sinaddr);
-void _mwDenySocket(HttpParam* hp,struct sockaddr_in *sinaddr);
+void _mwDenySocket(HttpParam* hp, struct sockaddr_in *sinaddr);
 int _mwProcessReadSocket(HttpParam* hp, HttpSocket* phsSocket);
 int _mwProcessWriteSocket(HttpParam *hp, HttpSocket* phsSocket);
 void _mwCloseSocket(HttpParam* hp, HttpSocket* phsSocket);
@@ -122,11 +122,11 @@ int _mwProcessMultipartPost(HttpParam *httpParam, HttpSocket* phsSocket, BOOL fN
 int _mwSubstVariables(HttpParam* hp, char* pchData, int iLength, int* piBytesUsed);
 char* _mwStrStrNoCase(char* pchHaystack, char* pchNeedle);
 void _mwProcessPostVars(HttpParam *httpParam, HttpSocket* phsSocket,
-			  int iContentOffset, int contentLength);
+	int iContentOffset, int contentLength);
 void _mwRedirect(HttpSocket* phsSocket, char* pchFilename);
 int _mwSendRawDataChunk(HttpParam *hp, HttpSocket* phsSocket);
 int _mwStartSendRawData(HttpParam *hp, HttpSocket* phsSocket);
-int _mwGetToken(char* pchBuffer,int iTokenNumber,char** ppchToken); 
+int _mwGetToken(char* pchBuffer, int iTokenNumber, char** ppchToken);
 __inline char _mwDecodeCharacter(char* pchEncodedChar);
 int _mwLoadFileChunk(HttpParam *hp, HttpSocket* phsSocket);
 char* _mwFindMultipartBoundary(char *poHaystack, int iHaystackSize, char *poNeedle);

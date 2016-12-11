@@ -10,5 +10,3 @@
 #if defined (WIN32)
 # include "win32/getopt.cpp"
 #endif
-
-

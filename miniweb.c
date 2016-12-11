@@ -31,7 +31,7 @@ int uhAsyncDataTest(UrlHandlerParam* param);
 int uhRTSP(UrlHandlerParam* param);
 int uhSerial(UrlHandlerParam* param);
 
-UrlHandler urlHandlerList[]={
+UrlHandler urlHandlerList[] = {
 	{"stats", uhStats, NULL},
 #ifdef ENABLE_SERIAL
 	{"serial", uhSerial, NULL},
@@ -59,7 +59,7 @@ UrlHandler urlHandlerList[]={
 };
 
 #ifndef DISABLE_BASIC_WWWAUTH
-AuthHandler authHandlerList[]={
+AuthHandler authHandlerList[] = {
 	{"stats", "user", "pass", "group=admin", ""},
 	{NULL}
 };
@@ -69,7 +69,6 @@ HttpParam httpParam;
 
 extern FILE *fpLog;
 
-
 //////////////////////////////////////////////////////////////////////////
 // callback from the web server whenever it needs to substitute variables
 //////////////////////////////////////////////////////////////////////////
@@ -77,7 +76,7 @@ int DefaultWebSubstCallback(SubstParam* sp)
 {
 	// the maximum length of variable value should never exceed the number
 	// given by sp->iMaxValueBytes
-	if (!strcmp(sp->pchParamName,"mykeyword")) {
+	if (!strcmp(sp->pchParamName, "mykeyword")) {
 		return sprintf(sp->pchParamValue, "%d", 1234);
 	}
 	return -1;
@@ -88,12 +87,12 @@ int DefaultWebSubstCallback(SubstParam* sp)
 //////////////////////////////////////////////////////////////////////////
 int DefaultWebPostCallback(PostParam* pp)
 {
-  int iReturn=WEBPOST_OK;
+	int iReturn = WEBPOST_OK;
 
-  // by default redirect to config page
-  //strcpy(pp->chFilename,"index.htm");
+	// by default redirect to config page
+	//strcpy(pp->chFilename,"index.htm");
 
-  return iReturn;
+	return iReturn;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -102,7 +101,7 @@ int DefaultWebPostCallback(PostParam* pp)
 //////////////////////////////////////////////////////////////////////////
 int DefaultWebFileUploadCallback(HttpMultipart *pxMP, OCTET *poData, size_t dwDataChunkSize)
 {
-  // Do nothing with the data
+	// Do nothing with the data
 	int fd = (int)pxMP->pxCallBackData;
 	if (!poData) {
 		// to cleanup
@@ -152,7 +151,7 @@ int MiniWebQuit(int arg) {
 	static int quitting = 0;
 	if (quitting) return 0;
 	quitting = 1;
-	if (arg) printf("\nCaught signal (%d). MiniWeb shutting down...\n",arg);
+	if (arg) printf("\nCaught signal (%d). MiniWeb shutting down...\n", arg);
 	Shutdown();
 	return 0;
 }
@@ -163,35 +162,36 @@ void GetFullPath(char* buffer, char* argv0, char* path)
 	if (!p) p = strrchr(argv0, '\\');
 	if (!p) {
 		strcpy(buffer, path);
-	} else {
+	}
+	else {
 		int l = p - argv0 + 1;
 		memcpy(buffer, argv0, l);
 		strcpy(buffer + l, path);
 	}
 }
 
-int main(int argc,char* argv[])
+int main(int argc, char* argv[])
 {
-	fprintf(stderr,"MiniWeb (built on %s)\n(C)2005-2013 Written by Stanley Huang <stanleyhuangyc@gmail.com>\n\n", __DATE__);
+	fprintf(stderr, "MiniWeb (built on %s)\n(C)2005-2013 Written by Stanley Huang <stanleyhuangyc@gmail.com>\n\n", __DATE__);
 
 #ifdef WIN32
-	SetConsoleCtrlHandler( (PHANDLER_ROUTINE) MiniWebQuit, TRUE );
+	SetConsoleCtrlHandler((PHANDLER_ROUTINE)MiniWebQuit, TRUE);
 #else
-	signal(SIGINT, (void *) MiniWebQuit);
-	signal(SIGTERM, (void *) MiniWebQuit);
+	signal(SIGINT, (void *)MiniWebQuit);
+	signal(SIGTERM, (void *)MiniWebQuit);
 	signal(SIGPIPE, SIG_IGN);
 #endif
 
 	//fill in default settings
 	mwInitParam(&httpParam);
-	httpParam.maxClients=32;
+	httpParam.maxClients = 32;
 	httpParam.httpPort = 80;
 	GetFullPath(httpParam.pchWebPath, argv[0], "htdocs");
 #ifndef DISABLE_BASIC_WWWAUTH
 	httpParam.pxAuthHandler = authHandlerList;
 #endif
-	httpParam.pxUrlHandler=urlHandlerList;
-	httpParam.flags=FLAG_DIR_LISTING;
+	httpParam.pxUrlHandler = urlHandlerList;
+	httpParam.flags = FLAG_DIR_LISTING;
 	httpParam.tmSocketExpireTime = 15;
 	httpParam.pfnPost = DefaultWebPostCallback;
 #ifdef MEDIA_SERVER
@@ -203,40 +203,40 @@ int main(int argc,char* argv[])
 	//parsing command line arguments
 	{
 		int i;
-		for (i=1;i<argc;i++) {
-			if (argv[i][0]=='-') {
+		for (i = 1; i < argc; i++) {
+			if (argv[i][0] == '-') {
 				switch (argv[i][1]) {
 				case 'h':
-					fprintf(stderr,"Usage: miniweb	-h	: display this help screen\n"
-						       "		-v	: log status/error info\n"
-						       "		-p	: specifiy http port [default 80]\n"
-						       "		-r	: specify http document directory [default htdocs]\n"
-						       "		-l	: specify log file\n"
-						       "		-m	: specifiy max clients [default 32]\n"
-						       "		-M	: specifiy max clients per IP\n"
-							   "		-s	: specifiy download speed limit in KB/s [default: none]\n"
-							   "		-n	: disallow multi-part download [default: allow]\n"
-						       "		-d	: disallow directory listing [default ON]\n\n");
+					fprintf(stderr, "Usage: miniweb	-h	: display this help screen\n"
+						"		-v	: log status/error info\n"
+						"		-p	: specifiy http port [default 80]\n"
+						"		-r	: specify http document directory [default htdocs]\n"
+						"		-l	: specify log file\n"
+						"		-m	: specifiy max clients [default 32]\n"
+						"		-M	: specifiy max clients per IP\n"
+						"		-s	: specifiy download speed limit in KB/s [default: none]\n"
+						"		-n	: disallow multi-part download [default: allow]\n"
+						"		-d	: disallow directory listing [default ON]\n\n");
 					fflush(stderr);
-                                        exit(1);
+					exit(1);
 
 				case 'p':
-					if ((++i)<argc) httpParam.httpPort=atoi(argv[i]);
+					if ((++i) < argc) httpParam.httpPort = atoi(argv[i]);
 					break;
 				case 'r':
-					if ((++i)<argc) strncpy(httpParam.pchWebPath, argv[i], sizeof(httpParam.pchWebPath) - 1);
+					if ((++i) < argc) strncpy(httpParam.pchWebPath, argv[i], sizeof(httpParam.pchWebPath) - 1);
 					break;
 				case 'l':
-					if ((++i)<argc) fpLog=freopen(argv[i],"w",stderr);
+					if ((++i) < argc) fpLog = freopen(argv[i], "w", stderr);
 					break;
 				case 'm':
-					if ((++i)<argc) httpParam.maxClients=atoi(argv[i]);
+					if ((++i) < argc) httpParam.maxClients = atoi(argv[i]);
 					break;
 				case 'M':
-					if ((++i)<argc) httpParam.maxClientsPerIP=atoi(argv[i]);
+					if ((++i) < argc) httpParam.maxClientsPerIP = atoi(argv[i]);
 					break;
 				case 's':
-					if ((++i)<argc) httpParam.maxDownloadSpeed=atoi(argv[i]);
+					if ((++i) < argc) httpParam.maxDownloadSpeed = atoi(argv[i]);
 					break;
 				case 'n':
 					httpParam.flags |= FLAG_DISABLE_RANGE;
@@ -268,10 +268,10 @@ int main(int argc,char* argv[])
 	{
 		int n;
 		printf("Host: %s:%d\n", GetLocalAddrString(), httpParam.httpPort);
-		printf("Web root: %s\n",httpParam.pchWebPath);
-		printf("Max clients (per IP): %d (%d)\n",httpParam.maxClients, httpParam.maxClientsPerIP);
-		for (n=0;urlHandlerList[n].pchUrlPrefix;n++);
-		printf("URL handlers: %d\n",n);
+		printf("Web root: %s\n", httpParam.pchWebPath);
+		printf("Max clients (per IP): %d (%d)\n", httpParam.maxClients, httpParam.maxClientsPerIP);
+		for (n = 0; urlHandlerList[n].pchUrlPrefix; n++);
+		printf("URL handlers: %d\n", n);
 		if (httpParam.flags & FLAG_DIR_LISTING) printf("Dir listing enabled\n");
 		if (httpParam.flags & FLAG_DISABLE_RANGE) printf("Byte-range disabled\n");
 
@@ -281,7 +281,8 @@ int main(int argc,char* argv[])
 		//start server
 		if (mwServerStart(&httpParam)) {
 			printf("Error starting HTTP server\n");
-		} else {
+		}
+		else {
 			mwHttpLoop(&httpParam);
 		}
 	}

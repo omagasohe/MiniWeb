@@ -1,4 +1,4 @@
- /*******************************************************************
+/*******************************************************************
 * Process Platform Independent Layer
 * Copyright (c) 2005-06 Stanley Huang <stanleyhuangyc@gmail.com>
 * All rights reserved.
@@ -7,7 +7,7 @@
 #ifdef WIN32
 #include <windows.h>
 #include <io.h>
-#define snprintf _snprintf
+//#define snprintf _snprintf
 #else
 #include <unistd.h>
 #include <sys/time.h>
@@ -36,16 +36,17 @@ int ShellRead(SHELL_PARAM* param, int timeout)
 
 	if (!param->buffer || param->iBufferSize <= 0) {
 		if (param->flags & SF_ALLOC) {
-			param->buffer=malloc(SF_BUFFER_SIZE);
-			param->iBufferSize=SF_BUFFER_SIZE;
-		} else {
+			param->buffer = malloc(SF_BUFFER_SIZE);
+			param->iBufferSize = SF_BUFFER_SIZE;
+		}
+		else {
 			return -1;
 		}
 	}
 
 #ifndef WIN32
 	FD_ZERO(&fds);
-	FD_SET(param->fdRead,&fds);
+	FD_SET(param->fdRead, &fds);
 	tv.tv_sec = timeout / 1000;
 	tv.tv_usec = (timeout - tv.tv_sec * 1000) * 1000;
 #endif
@@ -56,33 +57,34 @@ int ShellRead(SHELL_PARAM* param, int timeout)
 		BOOL success;
 		DWORD start = GetTickCount();
 		do {
-			if (!PeekNamedPipe(param->fdRead,0,0,0,&bytes,0)) return -1;
+			if (!PeekNamedPipe(param->fdRead, 0, 0, 0, &bytes, 0)) return -1;
 		} while (bytes == 0 && WaitForSingleObject(param->piProcInfo.hProcess, 50) == WAIT_TIMEOUT && GetTickCount() - start < (DWORD)timeout);
 		if (bytes == 0) return 0;
 
 		param->locked++;
-		success =ReadFile(param->fdRead, param->buffer, param->iBufferSize - 1, &bytes, NULL);
+		success = ReadFile(param->fdRead, param->buffer, param->iBufferSize - 1, &bytes, NULL);
 		param->locked--;
 		if (!success)
 			return -1;
-		param->buffer[bytes]=0;
+		param->buffer[bytes] = 0;
 		return bytes;
 #else
-		if (select(param->fdRead+1,&fds,NULL,NULL,&tv) < 1) return -1;
-		ret=read(param->fdRead,param->buffer, param->iBufferSize - 1);
-		if (ret<1) return -1;
+		if (select(param->fdRead + 1, &fds, NULL, NULL, &tv) < 1) return -1;
+		ret = read(param->fdRead, param->buffer, param->iBufferSize - 1);
+		if (ret < 1) return -1;
 		param->buffer[ret] = 0;
 		return ret;
 #endif
-	} else {
+	}
+	else {
 #ifdef WIN32
 		size_t offset = 0;
 		int fSuccess;
-		for(;;) {
+		for (;;) {
 			DWORD bytes;
 			DWORD start = GetTickCount();
 			do {
-				if (!PeekNamedPipe(param->fdRead,0,0,0,&bytes,0)) return -1;
+				if (!PeekNamedPipe(param->fdRead, 0, 0, 0, &bytes, 0)) return -1;
 			} while (bytes == 0 && WaitForSingleObject(param->piProcInfo.hProcess, 50) == WAIT_TIMEOUT && GetTickCount() - start < (DWORD)timeout);
 			if (bytes == 0) return 0;
 
@@ -90,7 +92,8 @@ int ShellRead(SHELL_PARAM* param, int timeout)
 				if (param->flags & SF_ALLOC) {
 					param->iBufferSize = max(param->iBufferSize * 2, (int)(offset + bytes + 1));
 					param->buffer = realloc(param->buffer, param->iBufferSize);
-				} else {
+				}
+				else {
 					break;
 				}
 			}
@@ -100,7 +103,7 @@ int ShellRead(SHELL_PARAM* param, int timeout)
 			if (!fSuccess) break;
 			offset += bytes;
 		}
-		param->buffer[offset]=0;
+		param->buffer[offset] = 0;
 		return offset;
 #endif
 	}
@@ -121,11 +124,11 @@ int ShellTerminate(SHELL_PARAM* param)
 	int ret;
 #ifdef WIN32
 	if (!param->piProcInfo.hProcess) return -1;
-	ret=TerminateProcess(param->piProcInfo.hProcess,0)?0:-1;
+	ret = TerminateProcess(param->piProcInfo.hProcess, 0) ? 0 : -1;
 #else
 	if (!param->pid) return 0;
-	ret=kill(param->pid,SIGKILL);
-	param->pid=0;
+	ret = kill(param->pid, SIGKILL);
+	param->pid = 0;
 #endif
 	return ret;
 }
@@ -142,21 +145,21 @@ void ShellClean(SHELL_PARAM* param)
 #else
 	if (param->fdRead) close(param->fdRead);
 	if (param->fdWrite) close(param->fdWrite);
-	param->pid=0;
+	param->pid = 0;
 #endif
-	param->fdRead=0;
-	param->fdWrite=0;
+	param->fdRead = 0;
+	param->fdWrite = 0;
 	if (param->flags & SF_ALLOC) {
 		free(param->buffer);
-		param->buffer=NULL;
-		param->iBufferSize=0;
+		param->buffer = NULL;
+		param->iBufferSize = 0;
 	}
 }
 
 int ShellWait(SHELL_PARAM* param, int iTimeout)
 {
 #ifdef WIN32
-	switch (WaitForSingleObject(param->piProcInfo.hProcess,(iTimeout==-1)?INFINITE:iTimeout)) {
+	switch (WaitForSingleObject(param->piProcInfo.hProcess, (iTimeout == -1) ? INFINITE : iTimeout)) {
 	case WAIT_OBJECT_0:
 		GetExitCodeProcess(param->piProcInfo.hProcess, &param->iRetCode);
 		return 1;
@@ -166,8 +169,8 @@ int ShellWait(SHELL_PARAM* param, int iTimeout)
 		return -1;
 	}
 #else
-	int ret=-1;
-	return waitpid(param->pid,&ret,iTimeout==0?WNOHANG:0);
+	int ret = -1;
+	return waitpid(param->pid, &ret, iTimeout == 0 ? WNOHANG : 0);
 #endif
 }
 
@@ -180,11 +183,13 @@ static char* GetAppName(const char* commandLine)
 	p = strrchr(commandLine, '.');
 	if (p && !_stricmp(p + 1, "bat")) {
 		return _strdup("cmd.exe");
-	} else if (*commandLine == '\"') {
+	}
+	else if (*commandLine == '\"') {
 		appname = _strdup(commandLine + 1);
 		p = strchr(appname, '\"');
 		*p = 0;
-	} else {
+	}
+	else {
 		p = strchr(commandLine, ' ');
 		if (p) {
 			int l = p - commandLine;
@@ -192,7 +197,8 @@ static char* GetAppName(const char* commandLine)
 			strncpy(appname, commandLine, l);
 			appname[l] = 0;
 			if (!strchr(appname, '.')) strcat(appname, ".exe");
-		} else {
+		}
+		else {
 			appname = _strdup(commandLine);
 		}
 	}
@@ -228,7 +234,8 @@ char** Tokenize(char* str, char delimiter)
 				i++;
 				break;
 			}
-		} else {
+		}
+		else {
 			tokens[i] = p;
 			while (*p && *p != delimiter) p++;
 			if (!*p) {
@@ -249,45 +256,45 @@ int ShellExec(SHELL_PARAM* param, const char* cmdline)
 	SECURITY_ATTRIBUTES saAttr;
 	STARTUPINFO siStartInfo;
 	BOOL fSuccess;
-	char newPath[256],prevPath[256];
+	char newPath[256], prevPath[256];
 	HANDLE hChildStdinRd, hChildStdinWr, hChildStdoutRd, hChildStdoutWr;
 #else
-	int fdin[2], fdout[2],pid;
+	int fdin[2], fdout[2], pid;
 	int fdStdinChild;
 	int fdStdoutChild;
 	char *filePath;
 	char *prevPath;
- 	char *env[2];
+	char *env[2];
 
 	char *_cmdline = strdup(cmdline);
 	char **argv = Tokenize(_cmdline, ' ');
 #endif
 
 #if 0
-    for ( i = 0; argv[i] != NULL; i++) {
-        printf("	argv[%d]=%s\n", i, argv[i]);
-    }
+	for (i = 0; argv[i] != NULL; i++) {
+		printf("	argv[%d]=%s\n", i, argv[i]);
+	}
 #endif
 
 #ifdef WIN32
 	if (param->piProcInfo.hProcess || !cmdline) return -1;
 
-	_setmode( _fileno( stdin ), _O_BINARY );
-	_setmode( _fileno( stdout ), _O_BINARY );
+	_setmode(_fileno(stdin), _O_BINARY);
+	_setmode(_fileno(stdout), _O_BINARY);
 
 	// modify path variable
 	if (param->pchPath) {
-		GetEnvironmentVariable("PATH",prevPath,sizeof(prevPath));
+		GetEnvironmentVariable("PATH", prevPath, sizeof(prevPath));
 		snprintf(newPath, sizeof(newPath), "%s;s", param->pchPath, prevPath);
-		SetEnvironmentVariable("PATH",newPath);
+		SetEnvironmentVariable("PATH", newPath);
 	}
 
-	memset( &param->piProcInfo, 0, sizeof(PROCESS_INFORMATION) );
-	memset( &siStartInfo, 0, sizeof(STARTUPINFO) );
+	memset(&param->piProcInfo, 0, sizeof(PROCESS_INFORMATION));
+	memset(&siStartInfo, 0, sizeof(STARTUPINFO));
 
-///////////////////////////////////////////////////////////////////////
-//	create redirecting pipes
-///////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////
+	//	create redirecting pipes
+	///////////////////////////////////////////////////////////////////////
 
 	saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
 	saAttr.bInheritHandle = TRUE;
@@ -298,16 +305,16 @@ int ShellExec(SHELL_PARAM* param, const char* cmdline)
 
 	if (param->flags & (SF_REDIRECT_STDOUT | SF_REDIRECT_STDERR)) {
 		// Create a pipe for the child process's STDOUT.
-		if (! CreatePipe(&hChildStdoutRd, &hChildStdoutWr, &saAttr, 0)) {
+		if (!CreatePipe(&hChildStdoutRd, &hChildStdoutWr, &saAttr, 0)) {
 			return -1;
 		}
 		// Create noninheritable read handle and close the inheritable read
 		// handle.
 		fSuccess = DuplicateHandle(GetCurrentProcess(), hChildStdoutRd,
 			GetCurrentProcess(), (LPHANDLE)&param->fdRead, 0,
-				FALSE,
-				DUPLICATE_SAME_ACCESS);
-		if( !fSuccess ) return 0;
+			FALSE,
+			DUPLICATE_SAME_ACCESS);
+		if (!fSuccess) return 0;
 		CloseHandle(hChildStdoutRd);
 		if (param->flags & SF_REDIRECT_STDOUT) {
 			siStartInfo.hStdOutput = hChildStdoutWr;
@@ -319,14 +326,14 @@ int ShellExec(SHELL_PARAM* param, const char* cmdline)
 	siStartInfo.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
 	if (param->flags & SF_REDIRECT_STDIN) {
 		// Create a pipe for the child process's STDIN.
-		if (! CreatePipe(&hChildStdinRd, &hChildStdinWr, &saAttr, 0)) return 0;
+		if (!CreatePipe(&hChildStdinRd, &hChildStdinWr, &saAttr, 0)) return 0;
 
 		// Duplicate the write handle to the pipe so it is not inherited.
 		fSuccess = DuplicateHandle(GetCurrentProcess(), hChildStdinWr,
 			GetCurrentProcess(), (LPHANDLE)&param->fdWrite, 0,
-				FALSE,                  // not inherited
-				DUPLICATE_SAME_ACCESS);
-		if (! fSuccess) return -1;
+			FALSE,                  // not inherited
+			DUPLICATE_SAME_ACCESS);
+		if (!fSuccess) return -1;
 		CloseHandle(hChildStdinWr);
 		siStartInfo.hStdInput = hChildStdinRd;
 	}
@@ -335,10 +342,10 @@ int ShellExec(SHELL_PARAM* param, const char* cmdline)
 	siStartInfo.wShowWindow = (param->flags & SF_SHOW_WINDOW) ? SW_SHOW : SW_HIDE;
 	if (param->flags & (SF_REDIRECT_STDIN | SF_REDIRECT_STDOUT | SF_REDIRECT_STDERR)) siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
 
-///////////////////////////////////////////////////////////////////////
-//	create child process
-///////////////////////////////////////////////////////////////////////
-// Create the child process.
+	///////////////////////////////////////////////////////////////////////
+	//	create child process
+	///////////////////////////////////////////////////////////////////////
+	// Create the child process.
 
 	{
 		char* appname = GetAppName(cmdline);
@@ -356,9 +363,9 @@ int ShellExec(SHELL_PARAM* param, const char* cmdline)
 		free(appname);
 	}
 
-	if (param->pchPath) SetEnvironmentVariable("PATH",prevPath);
+	if (param->pchPath) SetEnvironmentVariable("PATH", prevPath);
 	if (!fSuccess) return -1;
-	WaitForInputIdle(param->piProcInfo.hProcess,INFINITE);
+	WaitForInputIdle(param->piProcInfo.hProcess, INFINITE);
 
 	if (param->flags & SF_REDIRECT_STDIN)
 		CloseHandle(hChildStdinRd);
@@ -371,39 +378,39 @@ int ShellExec(SHELL_PARAM* param, const char* cmdline)
 	if (param->flags & SF_REDIRECT_STDIN) {
 		pipe(fdin);
 		param->fdWrite = fdin[1];
-		fdStdinChild=fdin[0];
+		fdStdinChild = fdin[0];
 	}
 	if (param->flags & SF_REDIRECT_STDOUT) {
 		pipe(fdout);
 		param->fdRead = fdout[0];
-		fdStdoutChild=fdout[1];
+		fdStdoutChild = fdout[1];
 	}
 
 	pid = fork();
 	if (pid == -1) return -1;
 	if (pid == 0) { /* chid process */
-	    int i;
+		int i;
 		//generate argument list
 #ifdef _DEBUG
 		printf("cmdline:%s\n", cmdline);
 #endif
 		//TODO: Tokenize() is not good
-		filePath=argv[0];
-//		p=strrchr(args[0],'/');
-//		if (p) {
-//			filePath=args[0];
-//			args[0]=p+1;
-//		} else {
-//			filePath=args[0];
-//		}
+		filePath = argv[0];
+		//		p=strrchr(args[0],'/');
+		//		if (p) {
+		//			filePath=args[0];
+		//			args[0]=p+1;
+		//		} else {
+		//			filePath=args[0];
+		//		}
 
-		//set PATH
-		env[0]=NULL;
+				//set PATH
+		env[0] = NULL;
 		if (param->pchPath) {
-			prevPath=getenv("PATH");
-			env[0]=malloc(strlen(prevPath)+strlen(param->pchPath)+2+5);
-			sprintf(env[0],"PATH=%s:%s",prevPath,param->pchPath);
-			env[1]=NULL;
+			prevPath = getenv("PATH");
+			env[0] = malloc(strlen(prevPath) + strlen(param->pchPath) + 2 + 5);
+			sprintf(env[0], "PATH=%s:%s", prevPath, param->pchPath);
+			env[1] = NULL;
 		}
 		if (param->flags & SF_REDIRECT_STDIN) {
 			close(fdin[1]);
@@ -413,10 +420,10 @@ int ShellExec(SHELL_PARAM* param, const char* cmdline)
 			close(fdout[0]);
 			dup2(fdStdoutChild, 1);
 		}
-		for ( i = 0; env[i] != NULL; i++) {
+		for (i = 0; env[i] != NULL; i++) {
 			printf("env[%d]=%s\n", i, env[i]);
 		}
-		if (execve(filePath, argv, env)<0) {
+		if (execve(filePath, argv, env) < 0) {
 			printf("Error starting specified program\n");
 		}
 		return 0;
@@ -427,9 +434,9 @@ int ShellExec(SHELL_PARAM* param, const char* cmdline)
 	if (param->flags & SF_REDIRECT_STDOUT) {
 		close(fdout[1]);
 	}
-	param->pid=pid;
-    free(_cmdline);
-    free(argv);
+	param->pid = pid;
+	free(_cmdline);
+	free(argv);
 #endif
 	return 0;
 }

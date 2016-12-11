@@ -12,7 +12,7 @@ int mwWriteXmlHeader(char** pbuf, int* pbufsize, int ver, char* charset, char* x
 		ver / 10, ver % 10, charset ? charset : "utf-8");
 	*pbuf += len1;
 	*pbufsize -= len1;
-	if (xsl){
+	if (xsl) {
 		len2 = snprintf(*pbuf, *pbufsize, "<?xml-stylesheet type=\"text/xsl\" href=\"%s\"?>\n", xsl);
 		*pbuf += len2;
 		*pbufsize -= len2;
@@ -27,8 +27,8 @@ void mwWriteXmlString(char** pbuf, int* pbufsize, int indent, char* str)
 	int bufsize = *pbufsize;
 	if (bufsize < indent * 2) return;
 	for (i = 0; i < indent; i++) {
-		*((*pbuf) ++) = ' ';
-		*((*pbuf) ++) = ' ';
+		*((*pbuf)++) = ' ';
+		*((*pbuf)++) = ' ';
 	}
 	bufsize -= indent * 2;
 	len = snprintf(*pbuf, bufsize, "%s%s", str, indent ? "\n" : "");

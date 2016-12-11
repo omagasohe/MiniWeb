@@ -5,12 +5,12 @@ typedef struct _PL_ENTRY {
 } PL_ENTRY;
 
 typedef enum {
-	ACT_NOTHING=0,
+	ACT_NOTHING = 0,
 	ACT_SKIP,
 } VOD_CLIENT_ACTIONS;
 
-typedef int (*PL_ENUM_CALLBACK)(PL_ENTRY *entry, void *arg);
-	
+typedef int(*PL_ENUM_CALLBACK)(PL_ENTRY *entry, void *arg);
+
 PL_ENTRY* plAddEntry(PL_ENTRY **hdr, void* data, int datalen);
 PL_ENTRY* plFindEntry(PL_ENTRY *hdr, void* data, int datalen);
 void* plGetEntry(PL_ENTRY **hdr);
